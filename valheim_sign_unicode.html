@@ -16,13 +16,12 @@
       font-size: 18px;
       margin-bottom: 10px;
     }
-    select, button {
+    select, button, input[type="color"], input[type="text"], input[type="range"] {
       font-size: 16px;
       padding: 6px;
       margin: 5px 0;
     }
     #output {
-      font-size: 24px;
       margin-top: 10px;
       padding: 10px;
       background-color: #222;
@@ -33,10 +32,11 @@
 </head>
 <body>
   <h1>Valheim Unicode Sign Generator</h1>
-  <p>Enter your sign text, choose a style, and paste it in-game!</p>
+  <p>Enter your sign text, choose a style, font size, and color — then paste it in-game!</p>
 
   <textarea id="input" placeholder="Type your Valheim sign text here..."></textarea>
   
+  <br>
   <label for="style">Choose style:</label>
   <select id="style">
     <option value="fraktur">Fraktur (𝔉𝔬𝔯𝔤𝔢)</option>
@@ -46,6 +46,17 @@
     <option value="bubble">Bubble ⓑⓤⓑⓑⓛⓔ</option>
   </select>
 
+  <br><br>
+  <label for="fontSize">Font size:</label>
+  <input type="range" id="fontSize" min="12" max="72" value="24">
+  <span id="fontSizeValue">24</span>px
+
+  <br><br>
+  <label for="textColor">Text color:</label>
+  <input type="color" id="textColor" value="#ffffff">
+  <input type="text" id="hexInput" value="#ffffff" maxlength="7">
+  <a href="https://htmlcolorcodes.com/color-picker/" target="_blank" style="color:lightblue; margin-left: 10px;">🎨 Pick a color</a>
+
   <div id="output">Preview will appear here</div>
 
   <button onclick="copyOutput()">📋 Copy to Clipboard</button>
@@ -54,6 +65,10 @@
     const input = document.getElementById('input');
     const style = document.getElementById('style');
     const output = document.getElementById('output');
+    const fontSizeSlider = document.getElementById('fontSize');
+    const fontSizeValue = document.getElementById('fontSizeValue');
+    const textColor = document.getElementById('textColor');
+    const hexInput = document.getElementById('hexInput');
 
     const styles = {
       fraktur: { A: 0x1D504, skip: ['C', 'H', 'I', 'R', 'Z'] },
@@ -80,7 +95,7 @@
       }
 
       if (styleMap.skip && styleMap.skip.includes(String.fromCharCode(code).toUpperCase())) {
-        return char; // fallback if style doesn't support that character
+        return char;
       }
 
       return String.fromCodePoint(base + offset);
@@ -114,6 +129,24 @@
 
     input.addEventListener('input', updateOutput);
     style.addEventListener('change', updateOutput);
+    fontSizeSlider.addEventListener('input', () => {
+      output.style.fontSize = fontSizeSlider.value + 'px';
+      fontSizeValue.textContent = fontSizeSlider.value;
+    });
+    textColor.addEventListener('input', () => {
+      output.style.color = textColor.value;
+      hexInput.value = textColor.value;
+    });
+    hexInput.addEventListener('input', () => {
+      if (/^#[0-9A-Fa-f]{6}$/.test(hexInput.value)) {
+        output.style.color = hexInput.value;
+        textColor.value = hexInput.value;
+      }
+    });
+
+    // Initial style
+    output.style.fontSize = fontSizeSlider.value + 'px';
+    output.style.color = textColor.value;
   </script>
 </body>
 </html>
