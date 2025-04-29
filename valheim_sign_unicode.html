@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Valheim Unicode Sign Generator</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background-color: #111;
+      color: #eee;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    select, button {
+      font-size: 16px;
+      padding: 6px;
+      margin: 5px 0;
+    }
+    #output {
+      font-size: 24px;
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #222;
+      border: 1px solid #444;
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+<body>
+  <h1>Valheim Unicode Sign Generator</h1>
+  <p>Enter your sign text, choose a style, and paste it in-game!</p>
+
+  <textarea id="input" placeholder="Type your Valheim sign text here..."></textarea>
+  
+  <label for="style">Choose style:</label>
+  <select id="style">
+    <option value="fraktur">Fraktur (𝔉𝔬𝔯𝔤𝔢)</option>
+    <option value="bold">Bold (𝐁𝐎𝐋𝐃)</option>
+    <option value="italic">Italic (𝘐𝘵𝘢𝘭𝘪𝘤)</option>
+    <option value="double">Double-struck (𝔻𝕆𝕌𝔹𝕃𝔼)</option>
+    <option value="bubble">Bubble ⓑⓤⓑⓑⓛⓔ</option>
+  </select>
+
+  <div id="output">Preview will appear here</div>
+
+  <button onclick="copyOutput()">📋 Copy to Clipboard</button>
+
+  <script>
+    const input = document.getElementById('input');
+    const style = document.getElementById('style');
+    const output = document.getElementById('output');
+
+    const styles = {
+      fraktur: { A: 0x1D504, skip: ['C', 'H', 'I', 'R', 'Z'] },
+      bold: { A: 0x1D400 },
+      italic: { A: 0x1D434 },
+      double: { A: 0x1D538, skip: ['C', 'H', 'I', 'N', 'Q', 'Z'] },
+      bubble: { A: 0x24B6 }
+    };
+
+    function convert(char, selectedStyle) {
+      const code = char.charCodeAt(0);
+      const isUpper = code >= 65 && code <= 90;
+      const isLower = code >= 97 && code <= 122;
+      const styleMap = styles[selectedStyle];
+
+      if (!isUpper && !isLower) return char;
+
+      let base = styleMap.A;
+      let offset = isUpper ? code - 65 : code - 97;
+
+      if (selectedStyle === 'bubble') {
+        const offsetBase = isUpper ? 0x24B6 : 0x24D0;
+        return String.fromCodePoint(offsetBase + offset);
+      }
+
+      if (styleMap.skip && styleMap.skip.includes(String.fromCharCode(code).toUpperCase())) {
+        return char; // fallback if style doesn't support that character
+      }
+
+      return String.fromCodePoint(base + offset);
+    }
+
+    function updateOutput() {
+      const text = input.value;
+      const selectedStyle = style.value;
+      let result = '';
+
+      for (let char of text) {
+        if (/[a-zA-Z]/.test(char)) {
+          result += convert(char, selectedStyle);
+        } else {
+          result += char;
+        }
+      }
+
+      output.textContent = result;
+    }
+
+    function copyOutput() {
+      const temp = document.createElement('textarea');
+      temp.value = output.textContent;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      document.body.removeChild(temp);
+      alert('Copied to clipboard!');
+    }
+
+    input.addEventListener('input', updateOutput);
+    style.addEventListener('change', updateOutput);
+  </script>
+</body>
+</html>
